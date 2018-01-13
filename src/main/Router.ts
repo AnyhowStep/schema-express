@@ -77,6 +77,9 @@ export class Router <
             rawApp
         );
     }
+    public getApp () {
+        return this.rawApp;
+    }
     public build (this : Router<LocalsT, expressCore.Express>) : void {
         this.rawApp.use(this.rawRouter);
     }

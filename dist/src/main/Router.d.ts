@@ -15,5 +15,6 @@ export declare class Router<LocalsT extends Object = DefaultLocalsT, AppT extend
     use<L extends {}>(handler: Handler<{}, {}, {}, {}, LocalsT, L>): Router<LocalsT & L, AppT>;
     add<RawParamT, ParamT extends schema.Param<RawParamT>, QueryT, BodyT, ResponseT, AccessTokenT extends schema.AccessTokenType | undefined>(route: schema.Route<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, schema.MethodLiteral>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, expressCore.IRouter>;
     setApp(rawApp: expressCore.Express): Router<LocalsT, expressCore.Express>;
+    getApp(): AppT;
     build(this: Router<LocalsT, expressCore.Express>): void;
 }

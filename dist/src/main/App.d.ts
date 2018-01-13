@@ -29,4 +29,5 @@ export declare class App<LocalsT extends Object = DefaultLocalsT> {
     use<L extends {}>(handler: RequestHandler<{}, {}, {}, {}, LocalsT, L>): App<LocalsT & L>;
     use<L extends {}>(handler: ErrorHandler<{}, {}, {}, {}, LocalsT, L>): App<LocalsT & L>;
     createRouter(): Router<LocalsT, expressCore.Express>;
+    useRouter(root: string, router: Router<any, expressCore.Express | undefined>): void;
 }

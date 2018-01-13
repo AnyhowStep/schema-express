@@ -34,6 +34,9 @@ class Router {
     setApp(rawApp) {
         return new Router(this.rawRouter, rawApp);
     }
+    getApp() {
+        return this.rawApp;
+    }
     build() {
         this.rawApp.use(this.rawRouter);
     }

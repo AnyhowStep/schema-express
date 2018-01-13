@@ -89,4 +89,11 @@ export class App <LocalsT extends Object = DefaultLocalsT> {
         return Router.Create<LocalsT>()
             .setApp(this.rawApp);
     }
+    public useRouter (root : string, router : Router<any, expressCore.Express|undefined>) {
+        const routerApp = router.getApp();
+        if (routerApp != undefined && routerApp != this.rawApp) {
+            throw new Error(`This router already has another app set`);
+        }
+        this.rawApp.use(root, router.getRawRouter());
+    }
 }

@@ -42,6 +42,13 @@ class App {
         return Router_1.Router.Create()
             .setApp(this.rawApp);
     }
+    useRouter(root, router) {
+        const routerApp = router.getApp();
+        if (routerApp != undefined && routerApp != this.rawApp) {
+            throw new Error(`This router already has another app set`);
+        }
+        this.rawApp.use(root, router.getRawRouter());
+    }
 }
 exports.App = App;
 //# sourceMappingURL=App.js.map
