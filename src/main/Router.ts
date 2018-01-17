@@ -1,8 +1,8 @@
 import * as schema from "schema-decorator";
 import * as expressCore from "express-serve-static-core";
 import * as express from "express";
-import {Handler, wrapHandler} from "./Handler";
-import {VoidHandler} from "./VoidHandler";
+import {Handler, RequestHandler, ErrorHandler, wrapHandler} from "./Handler";
+import {VoidHandler, RequestVoidHandler, ErrorVoidHandler} from "./VoidHandler";
 import {DefaultLocalsT} from "./DefaultLocalsT";
 import {RouteBuilder} from "./RouteBuilder";
 
@@ -14,10 +14,14 @@ export class Router <
     private rawRouter : expressCore.Router;
     private rawApp    : AppT;
     private _dummyLocalsT? : LocalsT;
-    public constructor (rawRouter : expressCore.Router, rawApp : AppT) {
+
+    private handlers : VoidHandler<any, any, any, any, any>[] = [];
+
+    public constructor (rawRouter : expressCore.Router, rawApp : AppT, handlers : VoidHandler<{}, {}, {}, {}, any>[] = []) {
         this.rawRouter = rawRouter;
         this.rawApp = rawApp;
         this._dummyLocalsT;
+        this.handlers = handlers;
     }
     public static Create<LocalsT> (rawRouter? : expressCore.Router) : Router<LocalsT, undefined> {
         if (rawRouter == undefined) {
@@ -32,15 +36,48 @@ export class Router <
         return this.rawRouter;
     }
 
+    //Behaves like express' use()
+    public useVoid (handler : RequestVoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT>;
+    public useVoid (handler : ErrorVoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT>;
+    public useVoid (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT>;
     public useVoid (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT> {
         this.rawRouter.use(handler);
         return this;
     }
+    //Behaves like express' use()
+    public use<L extends {}> (handler : RequestHandler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT>;
+    public use<L extends {}> (handler : ErrorHandler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT>;
+    public use<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT>;
     public use<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT> {
         const newHandler = wrapHandler(handler);
         this.rawRouter.use(newHandler);
         return this as any;
     }
+    //Behaves differently from express' use(), will scope the middleware to just the route
+    //and is applied to subsequent paths built by this router.
+    public voidHandler (handler : RequestVoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT>;
+    public voidHandler (handler : ErrorVoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT>;
+    public voidHandler (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT>;
+    public voidHandler (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : Router<LocalsT, AppT> {
+        return new Router(
+            this.rawRouter,
+            this.rawApp,
+            [...this.handlers, handler]
+        );
+    }
+    //Behaves differently from express' use(), will scope the middleware to just the route
+    //and is applied to subsequent paths built by this router.
+    public handler<L extends {}> (handler : RequestHandler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT>;
+    public handler<L extends {}> (handler : ErrorHandler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT>;
+    public handler<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT>;
+    public handler<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : Router<LocalsT & L, AppT> {
+        return new Router(
+            this.rawRouter,
+            this.rawApp,
+            [...this.handlers, wrapHandler(handler)]
+        );
+    }
+
     public add<
         RawParamT,
         ParamT extends schema.Param<RawParamT>,
@@ -60,7 +97,7 @@ export class Router <
         LocalsT,
         expressCore.IRouter
     > {
-        return RouteBuilder.Create<
+        let builder = RouteBuilder.Create<
             RawParamT,
             ParamT,
             QueryT,
@@ -69,6 +106,10 @@ export class Router <
             AccessTokenT,
             LocalsT
         >(route).setRouter(this.rawRouter);
+        for (let h of this.handlers) {
+            builder = builder.voidHandler(h);
+        }
+        return builder;
     }
 
     public setApp (rawApp : expressCore.Express) : Router<LocalsT, expressCore.Express> {

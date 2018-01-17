@@ -74,12 +74,14 @@ export class App <LocalsT extends Object = DefaultLocalsT> {
     }
     public useVoid (handler : RequestVoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT>;
     public useVoid (handler : ErrorVoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT>;
+    public useVoid (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT>;
     public useVoid (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT> {
         this.rawApp.use(handler);
         return this;
     }
     public use<L extends {}> (handler : RequestHandler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L>;
     public use<L extends {}> (handler : ErrorHandler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L>;
+    public use<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L>;
     public use<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L> {
         const newHandler = wrapHandler(handler);
         this.rawApp.use(newHandler);

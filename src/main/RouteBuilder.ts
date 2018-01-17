@@ -93,6 +93,16 @@ export class RouteBuilder<
         AccessTokenT,
         LocalsT,
         RouterT
+    >;
+    public voidHandler (handler : VoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>) : RouteBuilder<
+        RawParamT,
+        ParamT,
+        QueryT,
+        BodyT,
+        ResponseT,
+        AccessTokenT,
+        LocalsT,
+        RouterT
     > {
 
         return new RouteBuilder(
@@ -115,6 +125,16 @@ export class RouteBuilder<
         RouterT
     >;
     public handler<L extends {}> (handler : ErrorHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT, L>) : RouteBuilder<
+        RawParamT,
+        ParamT,
+        QueryT,
+        BodyT,
+        ResponseT,
+        AccessTokenT,
+        LocalsT & L,
+        RouterT
+    >;
+    public handler<L extends {}> (handler : Handler<ParamT, QueryT, BodyT, ResponseT, LocalsT, L>) : RouteBuilder<
         RawParamT,
         ParamT,
         QueryT,

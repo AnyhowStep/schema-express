@@ -5,10 +5,12 @@ const Handler_1 = require("./Handler");
 const RouteBuilder_1 = require("./RouteBuilder");
 //TODO support param(), they're pretty cool
 class Router {
-    constructor(rawRouter, rawApp) {
+    constructor(rawRouter, rawApp, handlers = []) {
+        this.handlers = [];
         this.rawRouter = rawRouter;
         this.rawApp = rawApp;
         this._dummyLocalsT;
+        this.handlers = handlers;
     }
     static Create(rawRouter) {
         if (rawRouter == undefined) {
@@ -28,8 +30,18 @@ class Router {
         this.rawRouter.use(newHandler);
         return this;
     }
+    voidHandler(handler) {
+        return new Router(this.rawRouter, this.rawApp, [...this.handlers, handler]);
+    }
+    handler(handler) {
+        return new Router(this.rawRouter, this.rawApp, [...this.handlers, Handler_1.wrapHandler(handler)]);
+    }
     add(route) {
-        return RouteBuilder_1.RouteBuilder.Create(route).setRouter(this.rawRouter);
+        let builder = RouteBuilder_1.RouteBuilder.Create(route).setRouter(this.rawRouter);
+        for (let h of this.handlers) {
+            builder = builder.voidHandler(h);
+        }
+        return builder;
     }
     setApp(rawApp) {
         return new Router(this.rawRouter, rawApp);
