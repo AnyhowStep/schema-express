@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Handler_1 = require("./Handler");
+const AsyncVoidHandler_1 = require("./AsyncVoidHandler");
 const SchemaHandler_1 = require("./SchemaHandler");
 const ResponseHandler_1 = require("./ResponseHandler");
 class RouteBuilder {
@@ -25,6 +26,13 @@ class RouteBuilder {
     }
     handler(handler) {
         const newHandler = Handler_1.wrapHandler(handler);
+        return new RouteBuilder(this.route, [
+            ...this.handlers,
+            newHandler
+        ], this.rawRouter);
+    }
+    asyncVoidHandler(handler) {
+        const newHandler = AsyncVoidHandler_1.wrapAsyncVoidHandler(handler);
         return new RouteBuilder(this.route, [
             ...this.handlers,
             newHandler

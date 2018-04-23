@@ -4,6 +4,7 @@ import * as express from "express";
 import {HandlerArray} from "./HandlerArray";
 import {VoidHandler, RequestVoidHandler, ErrorVoidHandler} from "./VoidHandler";
 import {Handler, RequestHandler, ErrorHandler, wrapHandler} from "./Handler";
+import {AsyncVoidHandler, AsyncRequestVoidHandler, AsyncErrorVoidHandler, wrapAsyncVoidHandler} from "./AsyncVoidHandler";
 import {SchemaHandler} from "./SchemaHandler";
 import {DefaultLocalsT} from "./DefaultLocalsT";
 import {wrapResponseHandler} from "./ResponseHandler";
@@ -155,6 +156,56 @@ export class RouteBuilder<
         RouterT
     > {
         const newHandler = wrapHandler(handler);
+        return new RouteBuilder(
+            this.route,
+            [
+                ...this.handlers,
+                newHandler
+            ],
+            this.rawRouter
+        );
+    }
+    public asyncVoidHandler (handler : AsyncRequestVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>) : RouteBuilder<
+        RawParamT,
+        ParamT,
+        QueryT,
+        BodyT,
+        ResponseT,
+        AccessTokenT,
+        LocalsT,
+        RouterT
+    >;
+    public asyncVoidHandler (handler : AsyncErrorVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>) : RouteBuilder<
+        RawParamT,
+        ParamT,
+        QueryT,
+        BodyT,
+        ResponseT,
+        AccessTokenT,
+        LocalsT,
+        RouterT
+    >;
+    public asyncVoidHandler (handler : AsyncVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>) : RouteBuilder<
+        RawParamT,
+        ParamT,
+        QueryT,
+        BodyT,
+        ResponseT,
+        AccessTokenT,
+        LocalsT,
+        RouterT
+    >;
+    public asyncVoidHandler (handler : AsyncVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>) : RouteBuilder<
+        RawParamT,
+        ParamT,
+        QueryT,
+        BodyT,
+        ResponseT,
+        AccessTokenT,
+        LocalsT,
+        RouterT
+    > {
+        const newHandler = wrapAsyncVoidHandler(handler);
         return new RouteBuilder(
             this.route,
             [
