@@ -1,29 +1,53 @@
-/// <reference types="express" />
-import * as schema from "schema-decorator";
+import * as sd from "schema-decorator";
 import * as expressCore from "express-serve-static-core";
 import * as express from "express";
-import { HandlerArray } from "./HandlerArray";
 import { VoidHandler, RequestVoidHandler, ErrorVoidHandler } from "./VoidHandler";
 import { Handler, RequestHandler, ErrorHandler } from "./Handler";
 import { AsyncVoidHandler, AsyncRequestVoidHandler, AsyncErrorVoidHandler } from "./AsyncVoidHandler";
-import { DefaultLocalsT } from "./DefaultLocalsT";
-export declare class RouteBuilder<RawParamT, ParamT extends schema.Param<RawParamT>, QueryT, BodyT, ResponseT, AccessTokenT extends schema.AccessTokenType | undefined, LocalsT extends Object = DefaultLocalsT, RouterT extends expressCore.IRouter | undefined = undefined> {
+import { Assign } from "./assign";
+import { RequestData } from "./Request";
+import { ResponseData, Locals } from "./Response";
+export declare type RouteToRequestData<RouteT extends sd.Route<any>> = ({
+    params: ("paramF" extends keyof RouteT["data"] ? sd.TypeOf<RouteT["data"]["paramF"]> : {});
+    query: ("queryF" extends keyof RouteT["data"] ? sd.TypeOf<RouteT["data"]["queryF"]> : {});
+    body: ("bodyF" extends keyof RouteT["data"] ? sd.TypeOf<RouteT["data"]["bodyF"]> : {});
+    headers: ("headerF" extends keyof RouteT["data"] ? sd.TypeOf<RouteT["data"]["headerF"]> : {});
+});
+export declare type RouteToResponseData<RouteT extends sd.Route<any>, LocalsT extends object> = ("responseF" extends keyof RouteT["data"] ? {
+    locals: LocalsT;
+    response: sd.AcceptsOf<RouteT["data"]["responseF"]>;
+} : {
+    locals: LocalsT;
+});
+export declare class RouteBuilder<RequestDataT extends RequestData, ResponseDataT extends ResponseData, RouterT extends expressCore.IRouter | undefined = undefined> {
     private route;
     private handlers;
     private rawRouter;
-    private _dummyLocalsT?;
-    constructor(route: schema.Route<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, schema.MethodLiteral>, handlers: HandlerArray<ParamT, QueryT, BodyT, ResponseT>, rawRouter: RouterT);
-    static Create<RawParamT, ParamT extends schema.Param<RawParamT>, QueryT, BodyT, ResponseT, AccessTokenT extends schema.AccessTokenType | undefined, LocalsT extends Object>(route: schema.Route<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, schema.MethodLiteral>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, undefined>;
-    voidHandler(handler: RequestVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, RouterT>;
-    voidHandler(handler: ErrorVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, RouterT>;
-    voidHandler(handler: VoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, RouterT>;
-    handler<L extends {}>(handler: RequestHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT, L>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT & L, RouterT>;
-    handler<L extends {}>(handler: ErrorHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT, L>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT & L, RouterT>;
-    handler<L extends {}>(handler: Handler<ParamT, QueryT, BodyT, ResponseT, LocalsT, L>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT & L, RouterT>;
-    asyncVoidHandler(handler: AsyncRequestVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, RouterT>;
-    asyncVoidHandler(handler: AsyncErrorVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, RouterT>;
-    asyncVoidHandler(handler: AsyncVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, RouterT>;
-    static GetRouterMatcher(router: expressCore.IRouter, method: schema.MethodLiteral): express.IRouterMatcher<expressCore.IRouter>;
-    setRouter(rawRouter: expressCore.IRouter): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, expressCore.IRouter>;
-    build(this: RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, expressCore.IRouter>): void;
+    readonly _dummyRequestDataT?: RequestDataT;
+    readonly _dummyResponseDataT?: ResponseDataT;
+    readonly _dummyRouterT?: RouterT;
+    private constructor();
+    static Create<RouteT extends sd.Route<any>, LocalsT extends object>(route: RouteT): (RouteBuilder<RouteToRequestData<RouteT>, RouteToResponseData<RouteT, LocalsT>, undefined>);
+    voidHandler(handler: RequestVoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    voidHandler(handler: ErrorVoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    voidHandler(handler: VoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    voidHandler<H extends VoidHandler<any, any>>(handler: H): (H extends VoidHandler<infer Req, infer Res> ? (RequestDataT extends Req ? (Locals<RequestDataT> extends Locals<Res> ? ("response" extends keyof Res ? ("response" extends keyof ResponseDataT ? (Res["response"] extends ResponseDataT["response"] ? RouteBuilder<RequestDataT, ResponseDataT, RouterT> : never) : never) : RouteBuilder<RequestDataT, ResponseDataT, RouterT>) : never) : never) : never);
+    handler<NxtL extends object>(handler: RequestHandler<RequestDataT, ResponseDataT, NxtL>): (RouteBuilder<RequestDataT, {
+        [key in keyof ResponseDataT]: (key extends "locals" ? Assign<ResponseDataT["locals"], NxtL> : ResponseDataT[key]);
+    }, RouterT>);
+    handler<NxtL extends object>(handler: ErrorHandler<RequestDataT, ResponseDataT, NxtL>): (RouteBuilder<RequestDataT, {
+        [key in keyof ResponseDataT]: (key extends "locals" ? Assign<ResponseDataT["locals"], NxtL> : ResponseDataT[key]);
+    }, RouterT>);
+    handler<H extends Handler<any, any, any>>(handler: H): (H extends Handler<infer Req, infer Res, infer NxtL> ? (RequestDataT extends Req ? (Locals<RequestDataT> extends Locals<Res> ? ("response" extends keyof Res ? ("response" extends keyof ResponseDataT ? (Res["response"] extends ResponseDataT["response"] ? RouteBuilder<RequestDataT, {
+        [key in keyof ResponseDataT]: (key extends "locals" ? Assign<ResponseDataT["locals"], NxtL> : ResponseDataT[key]);
+    }, RouterT> : never) : never) : RouteBuilder<RequestDataT, {
+        [key in keyof ResponseDataT]: (key extends "locals" ? Assign<ResponseDataT["locals"], NxtL> : ResponseDataT[key]);
+    }, RouterT>) : never) : never) : never);
+    asyncVoidHandler(handler: AsyncRequestVoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    asyncVoidHandler(handler: AsyncErrorVoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    asyncVoidHandler(handler: AsyncVoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    asyncVoidHandler<H extends AsyncVoidHandler<any, any>>(handler: H): (H extends AsyncVoidHandler<infer Req, infer Res> ? (RequestDataT extends Req ? (Locals<RequestDataT> extends Locals<Res> ? ("response" extends keyof Res ? ("response" extends keyof ResponseDataT ? (Res["response"] extends ResponseDataT["response"] ? RouteBuilder<RequestDataT, ResponseDataT, RouterT> : never) : never) : RouteBuilder<RequestDataT, ResponseDataT, RouterT>) : never) : never) : never);
+    static GetRouterMatcher(router: expressCore.IRouter, method: Exclude<sd.MethodLiteral, "Contextual">): express.IRouterMatcher<expressCore.IRouter>;
+    setRouter(rawRouter: expressCore.IRouter): RouteBuilder<RequestDataT, ResponseDataT, expressCore.IRouter>;
+    build(this: RouteBuilder<RequestDataT, ResponseDataT, expressCore.IRouter>): void;
 }

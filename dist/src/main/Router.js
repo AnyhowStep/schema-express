@@ -9,8 +9,9 @@ class Router {
         this.handlers = [];
         this.rawRouter = rawRouter;
         this.rawApp = rawApp;
-        this._dummyLocalsT;
         this.handlers = handlers;
+        this._dummyLocalsT;
+        this._dummyAppT;
     }
     static Create(rawRouter) {
         if (rawRouter == undefined) {

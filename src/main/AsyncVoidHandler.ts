@@ -1,40 +1,41 @@
-import {Request} from "./Request";
-import {Response} from "./Response";
+//import * as sd from "schema-decorator";
+import {Request, RequestData} from "./Request";
+import {Response, ResponseData} from "./Response";
 import {VoidNextFunction} from "./VoidNextFunction";
 import {VoidHandler} from "./VoidHandler";
 
-export interface AsyncRequestVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> {
+export interface AsyncRequestVoidHandler<RequestDataT extends RequestData, ResponseDataT extends ResponseData> {
     (
-        req  : Request<ParamT, QueryT, BodyT>,
-        res  : Response<ResponseT, LocalsT>,
+        req  : Request<RequestDataT>,
+        res  : Response<ResponseDataT>
     ): Promise<void>;
 }
 
-export interface AsyncErrorVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> {
+export interface AsyncErrorVoidHandler<RequestDataT extends RequestData, ResponseDataT extends ResponseData> {
     (
         err  : any,
-        req  : Request<ParamT, QueryT, BodyT>,
-        res  : Response<ResponseT, LocalsT>,
+        req  : Request<RequestDataT>,
+        res  : Response<ResponseDataT>
     ): Promise<void>;
 }
 
-export type AsyncVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> = (
-    AsyncRequestVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> |
-    AsyncErrorVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>
+export type AsyncVoidHandler<RequestDataT extends RequestData, ResponseDataT extends ResponseData> = (
+    AsyncRequestVoidHandler<RequestDataT, ResponseDataT> |
+    AsyncErrorVoidHandler<RequestDataT, ResponseDataT>
 );
 
-export function isAsyncRequestVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> (
-    handler : AsyncVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>
-) : handler is AsyncRequestVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> {
+export function isAsyncRequestVoidHandler<RequestDataT extends RequestData, ResponseDataT extends ResponseData> (
+    handler : AsyncVoidHandler<RequestDataT, ResponseDataT>
+) : handler is AsyncRequestVoidHandler<RequestDataT, ResponseDataT> {
     return handler.length <= 2;
 }
 
 //This lets us treat all handlers the same
-export function wrapAsyncVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> (
-    handler : AsyncVoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT>
-) : VoidHandler<ParamT, QueryT, BodyT, ResponseT, LocalsT> {
+export function wrapAsyncVoidHandler<RequestDataT extends RequestData, ResponseDataT extends ResponseData> (
+    handler : AsyncVoidHandler<RequestDataT, ResponseDataT>
+) : VoidHandler<RequestDataT, ResponseDataT> {
     if (isAsyncRequestVoidHandler(handler)) {
-        return (req : Request<ParamT, QueryT, BodyT>, res : Response<ResponseT, LocalsT>, next : VoidNextFunction) => {
+        return (req : Request<RequestDataT>, res : Response<ResponseDataT>, next : VoidNextFunction) => {
             handler(req, res)
                 .then(next)
                 .catch(next);

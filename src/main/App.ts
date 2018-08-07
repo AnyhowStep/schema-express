@@ -4,35 +4,36 @@ import {DefaultLocalsT} from "./DefaultLocalsT";
 import {Handler, RequestHandler, ErrorHandler, wrapHandler} from "./Handler";
 import {VoidHandler, RequestVoidHandler, ErrorVoidHandler} from "./VoidHandler";
 import {Router} from "./Router";
+import {Assign} from "./assign";
 
-export interface RouterMatcher<LocalsT, ReturnT> {
+export interface RouterMatcher<LocalsT extends object, ReturnT> {
     (
         path : string,
-        ...handlers : (RequestVoidHandler<{}, {}, {}, {}, LocalsT>)[]
+        ...handlers : (RequestVoidHandler<{}, { locals : LocalsT }>)[]
     ) : ReturnT;
     (
         path : string,
-        ...handlers : (ErrorVoidHandler<{}, {}, {}, {}, LocalsT>)[]
+        ...handlers : (ErrorVoidHandler<{}, { locals : LocalsT }>)[]
     ) : ReturnT;
     (
         path : string,
-        ...handlers : (RequestHandler<{}, {}, {}, {}, LocalsT, any>)[]
+        ...handlers : (RequestHandler<{}, { locals : LocalsT }, any>)[]
     ) : ReturnT;
     (
         path : string,
-        ...handlers : (ErrorHandler<{}, {}, {}, {}, LocalsT, any>)[]
+        ...handlers : (ErrorHandler<{}, { locals : LocalsT }, any>)[]
     ) : ReturnT;
     (
         path : string,
         ...handlers : (
-            VoidHandler<{}, {}, {}, {}, LocalsT> |
-            Handler<{}, {}, {}, {}, LocalsT, any>
+            VoidHandler<{}, { locals : LocalsT }> |
+            Handler<{}, { locals : LocalsT }, any>
         )[]
     ) : ReturnT;
 }
 
 export function toRouterMatcher<LocalsT extends Object, ReturnT> (matcher : expressCore.IRouterMatcher<any>, returnValue : ReturnT) : RouterMatcher<LocalsT, ReturnT> {
-    return (path : string, ...handlers : (VoidHandler<{}, {}, {}, {}, LocalsT>|Handler<{}, {}, {}, {}, LocalsT, any>)[]) => {
+    return (path : string, ...handlers : (VoidHandler<{}, { locals : LocalsT }>|Handler<{}, { locals : LocalsT }, any>)[]) => {
         matcher(path, ...handlers);
         return returnValue;
     };
@@ -72,17 +73,17 @@ export class App <LocalsT extends Object = DefaultLocalsT> {
     public getRawApp () {
         return this.rawApp;
     }
-    public useVoid (handler : RequestVoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT>;
-    public useVoid (handler : ErrorVoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT>;
-    public useVoid (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT>;
-    public useVoid (handler : VoidHandler<{}, {}, {}, {}, LocalsT>) : App<LocalsT> {
+    public useVoid (handler : RequestVoidHandler<{}, { locals : LocalsT }>) : App<LocalsT>;
+    public useVoid (handler : ErrorVoidHandler<{}, { locals : LocalsT }>) : App<LocalsT>;
+    public useVoid (handler : VoidHandler<{}, { locals : LocalsT }>) : App<LocalsT>;
+    public useVoid (handler : VoidHandler<{}, { locals : LocalsT }>) : App<LocalsT> {
         this.rawApp.use(handler);
         return this;
     }
-    public use<L extends {}> (handler : RequestHandler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L>;
-    public use<L extends {}> (handler : ErrorHandler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L>;
-    public use<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L>;
-    public use<L extends {}> (handler : Handler<{}, {}, {}, {}, LocalsT, L>) : App<LocalsT & L> {
+    public use<L extends object> (handler : RequestHandler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>>;
+    public use<L extends object> (handler : ErrorHandler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>>;
+    public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>>;
+    public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>> {
         const newHandler = wrapHandler(handler);
         this.rawApp.use(newHandler);
         return this as any;

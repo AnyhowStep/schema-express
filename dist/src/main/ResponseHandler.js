@@ -1,27 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const schema = require("schema-decorator");
-function wrapResponse(res, responseAssertion) {
+const sd = require("schema-decorator");
+function wrapResponse(res, responseF) {
+    const responseD = sd.toAssertDelegateExact(responseF == undefined ?
+        () => ({}) :
+        responseF);
     const originalJson = res.json.bind(res);
-    res.json = (rawBody) => {
-        //Restore the orignal json() method
-        //So subsequent calls don't trigger type checks
-        //If we're calling json() more than once, we're
-        //probably in an erraneous state, anyway
-        res.json = originalJson;
+    res.json = (rawResponse) => {
         if (res.statusCode >= 400 && res.statusCode < 600) {
-            //We are in an erraneous state, we don't validate anything for now
-            return originalJson(rawBody);
+            //We are in an erroneous state, we don't validate anything for now
+            return originalJson(rawResponse);
         }
-        const cleanBody = schema.toClassOrAssert("response", rawBody, responseAssertion);
-        const processedBody = schema.anyToRaw("response", cleanBody);
-        return originalJson(processedBody);
+        const cleanResponse = responseD("response", rawResponse);
+        const processedResponse = sd.anyToRaw("response", cleanResponse);
+        return originalJson(processedResponse);
     };
 }
 exports.wrapResponse = wrapResponse;
-function wrapResponseHandler(responseAssertion) {
+function wrapResponseHandler(route) {
     return (_req, res, next) => {
-        wrapResponse(res, responseAssertion);
+        wrapResponse(res, route.data.responseF);
         next();
     };
 }

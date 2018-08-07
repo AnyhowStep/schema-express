@@ -1,28 +1,27 @@
 import * as express from "express";
-import * as schema from "schema-decorator";
+import * as sd from "schema-decorator";
 import {RequestVoidHandler} from "./VoidHandler";
 
-export function wrapResponse<ResponseT> (res : express.Response, responseAssertion : schema.Assertion<ResponseT>) : void {
+export function wrapResponse<ResponseF extends undefined|sd.AnyAssertFunc=undefined> (res : express.Response, responseF : ResponseF) : void {
+    const responseD = sd.toAssertDelegateExact(
+        responseF == undefined ?
+            () => ({}) :
+            responseF as Exclude<ResponseF, undefined>
+    );
     const originalJson = res.json.bind(res);
-    res.json = (rawBody : any) => {
-        //Restore the orignal json() method
-        //So subsequent calls don't trigger type checks
-        //If we're calling json() more than once, we're
-        //probably in an erraneous state, anyway
-        res.json = originalJson;
-
+    res.json = (rawResponse : any) => {
         if (res.statusCode >= 400 && res.statusCode < 600) {
-            //We are in an erraneous state, we don't validate anything for now
-            return originalJson(rawBody);
+            //We are in an erroneous state, we don't validate anything for now
+            return originalJson(rawResponse);
         }
-        const cleanBody = schema.toClassOrAssert("response", rawBody, responseAssertion);
-        const processedBody = schema.anyToRaw("response", cleanBody);
-        return originalJson(processedBody);
+        const cleanResponse = responseD("response", rawResponse);
+        const processedResponse = sd.anyToRaw("response", cleanResponse);
+        return originalJson(processedResponse);
     };
 }
-export function wrapResponseHandler<ResponseT> (responseAssertion : schema.Assertion<ResponseT>) : RequestVoidHandler<any, any, any, ResponseT, any> {
+export function wrapResponseHandler<RouteT extends sd.Route<any>> (route : RouteT) : RequestVoidHandler<RouteT, any> {
     return (_req, res, next) => {
-        wrapResponse(res, responseAssertion);
+        wrapResponse(res, route.data.responseF);
         next();
     };
 }

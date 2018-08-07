@@ -1,56 +1,55 @@
-import * as schema from "schema-decorator";
+import * as sd from "schema-decorator";
 import * as validation from "@anyhowstep/data-validation";
 import * as schemaExpress from "../main/index";
 import * as express from "express";
 import * as http from "http";
 
-class Parameter {
-    @schema.assert(schema.stringToNaturalNumber())
-    id : number = 1;
-}
+const parameter = sd.toSchema({
+    id : sd.stringToNaturalNumber(),
+})
 class Body {
-    @schema.assert(validation.Number.assertNaturalNumber)
+    @sd.assert(validation.Number.assertNaturalNumber)
     userId : number = 1;
-    @schema.assert(validation.String.assertNonEmpty)
+    @sd.assert(validation.String.assertNonEmpty)
     title : string = "-";
-    @schema.assert(validation.String.assertNonEmpty)
+    @sd.assert(validation.String.assertNonEmpty)
     body : string = "-";
 }
 class Title {
-    @schema.assert(validation.String.assertNonEmpty)
+    @sd.assert(validation.String.assertNonEmpty)
     title : string = "-";
 }
 class Response {
-    @schema.assert(validation.Number.assertNaturalNumber)
+    @sd.assert(validation.Number.assertNaturalNumber)
     userId : number = 1;
-    @schema.assert(validation.Number.assertNaturalNumber)
+    @sd.assert(validation.Number.assertNaturalNumber)
     id : number = 1;
-    @schema.assert(validation.String.assertNonEmpty)
+    @sd.assert(validation.String.assertNonEmpty)
     title : string = "-";
-    @schema.assert(validation.String.assertNonEmpty)
+    @sd.assert(validation.String.assertNonEmpty)
     body : string = "-";
 }
 class Comment {
-    @schema.assert(validation.Number.assertNaturalNumber)
+    @sd.assert(validation.Number.assertNaturalNumber)
     postId : number = 1;
-    @schema.assert(validation.Number.assertNaturalNumber)
+    @sd.assert(validation.Number.assertNaturalNumber)
     id : number = 1;
-    @schema.assert(validation.String.assertNonEmpty)
+    @sd.assert(validation.String.assertNonEmpty)
     name : string = "-";
-    @schema.assert(validation.String.assertEmail)
+    @sd.assert(validation.String.assertEmail)
     email : string = "-@-";
-    @schema.assert(validation.String.assertNonEmpty)
+    @sd.assert(validation.String.assertNonEmpty)
     body : string = "-";
 }
 class CommentQuery {
-    @schema.assert(schema.stringToNaturalNumber())
+    @sd.assert(sd.stringToNaturalNumber())
     postId : number = 1;
 }
 
-const fetchPost = schema.Route.Create()
+const fetchPost = sd.Route.Create()
     .append("/posts")
     .appendParam("id", /\d+/)
-    .param(Parameter)
+    .param(parameter)
     .response(Response);
 
 const app = new schemaExpress.App()
@@ -82,9 +81,9 @@ r.add(fetchPost)
     })
     .build();
 
-const fetchAllPosts = schema.Route.Create()
+const fetchAllPosts = sd.Route.Create()
     .append("/posts")
-    .responseDelegate(schema.array(schema.nested(Response)));
+    .response(sd.array(sd.nested(Response)));
 
 r.add(fetchAllPosts)
     .voidHandler((_req, res) => {
@@ -101,7 +100,7 @@ r.add(fetchAllPosts)
     })
     .build();
 
-const createPost = schema.Route.Create()
+const createPost = sd.Route.Create()
     .append("/posts")
     .body(Body)
     .response(Response);
@@ -117,10 +116,10 @@ r.add(createPost)
     })
     .build();
 
-const del = schema.Route.Create()
+const del = sd.Route.Create()
         .append("/posts")
         .appendParam("id", /\d+/)
-        .param(Parameter)
+        .param(parameter)
         .method("DELETE");
 
 r.add(del)
@@ -129,11 +128,11 @@ r.add(del)
     })
     .build();
 
-const updatePost = schema.Route.Create()
+const updatePost = sd.Route.Create()
     .method("PUT")
     .append("/posts")
     .appendParam("id", /\d+/)
-    .param(Parameter)
+    .param(parameter)
     .body(Response)
     .response(Response);
 
@@ -148,10 +147,10 @@ r.add(updatePost)
     })
     .build();
 
-const patch = schema.Route.Create()
+const patch = sd.Route.Create()
         .append("/posts")
         .appendParam("id", /\d+/)
-        .param(Parameter)
+        .param(parameter)
         .body(Title)
         .response(Response)
         .method("PATCH");
@@ -167,10 +166,10 @@ r.add(patch)
     })
     .build();
 
-const getCommentsOfPost = schema.Route.Create()
+const getCommentsOfPost = sd.Route.Create()
     .append("/comments")
     .query(CommentQuery)
-    .responseDelegate(schema.array(schema.nested(Comment)));
+    .response(sd.array(sd.nested(Comment)));
 
 r.add(getCommentsOfPost)
     .voidHandler((req, res) => {
@@ -198,6 +197,7 @@ app.get("/test", (_req, res) => {
 });
 app.useVoid((err : any, _req : express.Request, res : express.Response, next : express.NextFunction) => {
     if (err) {
+        console.log(err);
         res.status(400).json({
             error : err.message,
         });

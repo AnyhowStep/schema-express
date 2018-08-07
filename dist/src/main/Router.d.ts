@@ -1,30 +1,56 @@
-import * as schema from "schema-decorator";
+import * as sd from "schema-decorator";
 import * as expressCore from "express-serve-static-core";
 import { Handler, RequestHandler, ErrorHandler } from "./Handler";
 import { VoidHandler, RequestVoidHandler, ErrorVoidHandler } from "./VoidHandler";
 import { DefaultLocalsT } from "./DefaultLocalsT";
-import { RouteBuilder } from "./RouteBuilder";
-export declare class Router<LocalsT extends Object = DefaultLocalsT, AppT extends expressCore.Express | undefined = undefined> {
+import { RouteBuilder, RouteToRequestData, RouteToResponseData } from "./RouteBuilder";
+import { Assign } from "./assign";
+export declare class Router<LocalsT extends object = DefaultLocalsT, AppT extends expressCore.Express | undefined = undefined> {
     private rawRouter;
     private rawApp;
-    private _dummyLocalsT?;
     private handlers;
-    constructor(rawRouter: expressCore.Router, rawApp: AppT, handlers?: VoidHandler<{}, {}, {}, {}, any>[]);
-    static Create<LocalsT>(rawRouter?: expressCore.Router): Router<LocalsT, undefined>;
+    _dummyLocalsT?: LocalsT;
+    _dummyAppT?: AppT;
+    constructor(rawRouter: expressCore.Router, rawApp: AppT, handlers?: VoidHandler<any, any>[]);
+    static Create<LocalsT extends object>(rawRouter?: expressCore.Router): Router<LocalsT, undefined>;
     getRawRouter(): expressCore.Router;
-    useVoid(handler: RequestVoidHandler<{}, {}, {}, {}, LocalsT>): Router<LocalsT, AppT>;
-    useVoid(handler: ErrorVoidHandler<{}, {}, {}, {}, LocalsT>): Router<LocalsT, AppT>;
-    useVoid(handler: VoidHandler<{}, {}, {}, {}, LocalsT>): Router<LocalsT, AppT>;
-    use<L extends {}>(handler: RequestHandler<{}, {}, {}, {}, LocalsT, L>): Router<LocalsT & L, AppT>;
-    use<L extends {}>(handler: ErrorHandler<{}, {}, {}, {}, LocalsT, L>): Router<LocalsT & L, AppT>;
-    use<L extends {}>(handler: Handler<{}, {}, {}, {}, LocalsT, L>): Router<LocalsT & L, AppT>;
-    voidHandler(handler: RequestVoidHandler<{}, {}, {}, {}, LocalsT>): Router<LocalsT, AppT>;
-    voidHandler(handler: ErrorVoidHandler<{}, {}, {}, {}, LocalsT>): Router<LocalsT, AppT>;
-    voidHandler(handler: VoidHandler<{}, {}, {}, {}, LocalsT>): Router<LocalsT, AppT>;
-    handler<L extends {}>(handler: RequestHandler<{}, {}, {}, {}, LocalsT, L>): Router<LocalsT & L, AppT>;
-    handler<L extends {}>(handler: ErrorHandler<{}, {}, {}, {}, LocalsT, L>): Router<LocalsT & L, AppT>;
-    handler<L extends {}>(handler: Handler<{}, {}, {}, {}, LocalsT, L>): Router<LocalsT & L, AppT>;
-    add<RawParamT, ParamT extends schema.Param<RawParamT>, QueryT, BodyT, ResponseT, AccessTokenT extends schema.AccessTokenType | undefined>(route: schema.Route<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, schema.MethodLiteral>): RouteBuilder<RawParamT, ParamT, QueryT, BodyT, ResponseT, AccessTokenT, LocalsT, expressCore.IRouter>;
+    useVoid(handler: RequestVoidHandler<{}, {
+        locals: LocalsT;
+    }>): Router<LocalsT, AppT>;
+    useVoid(handler: ErrorVoidHandler<{}, {
+        locals: LocalsT;
+    }>): Router<LocalsT, AppT>;
+    useVoid(handler: VoidHandler<{}, {
+        locals: LocalsT;
+    }>): Router<LocalsT, AppT>;
+    use<L extends object>(handler: RequestHandler<{}, {
+        locals: LocalsT;
+    }, L>): Router<Assign<LocalsT, L>, AppT>;
+    use<L extends object>(handler: ErrorHandler<{}, {
+        locals: LocalsT;
+    }, L>): Router<Assign<LocalsT, L>, AppT>;
+    use<L extends object>(handler: Handler<{}, {
+        locals: LocalsT;
+    }, L>): Router<Assign<LocalsT, L>, AppT>;
+    voidHandler(handler: RequestVoidHandler<{}, {
+        locals: LocalsT;
+    }>): Router<LocalsT, AppT>;
+    voidHandler(handler: ErrorVoidHandler<{}, {
+        locals: LocalsT;
+    }>): Router<LocalsT, AppT>;
+    voidHandler(handler: VoidHandler<{}, {
+        locals: LocalsT;
+    }>): Router<LocalsT, AppT>;
+    handler<L extends object>(handler: RequestHandler<{}, {
+        locals: LocalsT;
+    }, L>): Router<Assign<LocalsT, L>, AppT>;
+    handler<L extends object>(handler: ErrorHandler<{}, {
+        locals: LocalsT;
+    }, L>): Router<Assign<LocalsT, L>, AppT>;
+    handler<L extends object>(handler: Handler<{}, {
+        locals: LocalsT;
+    }, L>): Router<Assign<LocalsT, L>, AppT>;
+    add<RouteT extends sd.Route<any>>(route: RouteT): (RouteBuilder<RouteToRequestData<RouteT>, RouteToResponseData<RouteT, LocalsT>, expressCore.IRouter>);
     setApp(rawApp: expressCore.Express): Router<LocalsT, expressCore.Express>;
     getApp(): AppT;
     build(this: Router<LocalsT, expressCore.Express>): void;

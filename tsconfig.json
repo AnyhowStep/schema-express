@@ -21,6 +21,8 @@
         "noImplicitUseStrict": false,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noErrorTruncation": true,
 
         "strict": true,
 
@@ -28,14 +30,7 @@
         "moduleResolution": "node",
         "target": "ES6",
         "jsx": "react",
-        "jsxFactory": "h",
-
-        "baseUrl": "./src",
-        "paths": {
-            "*": [
-                "./types/*"
-            ]
-        }
+        "jsxFactory": "h"
     },
     "compileOnSave": false,
 

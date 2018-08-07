@@ -1,19 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const schema_decorator_1 = require("schema-decorator");
+const sd = require("schema-decorator");
 class SchemaHandler {
-    static Create(getRaw, setRaw, assertion) {
+    static Create(getRaw, setRaw, f) {
+        const d = sd.toAssertDelegateExact(f);
         return (req, res, next) => {
             let raw = getRaw(req, res);
             if (raw.value == undefined) {
                 raw.value = {};
             }
-            const value = schema_decorator_1.toClassOrAssert(raw.name, raw.value, assertion);
+            const value = d(raw.name, raw.value);
             setRaw(req, res, value);
             next();
         };
     }
-    static CreateParameter(assertion) {
+    static CreateParameter(f) {
         return SchemaHandler.Create((req) => {
             return {
                 name: "parameter",
@@ -21,9 +22,9 @@ class SchemaHandler {
             };
         }, (req, _res, value) => {
             req.params = value;
-        }, assertion);
+        }, f);
     }
-    static CreateQuery(assertion) {
+    static CreateQuery(f) {
         return SchemaHandler.Create((req) => {
             return {
                 name: "query",
@@ -31,9 +32,9 @@ class SchemaHandler {
             };
         }, (req, _res, value) => {
             req.query = value;
-        }, assertion);
+        }, f);
     }
-    static CreateBody(assertion) {
+    static CreateBody(f) {
         return SchemaHandler.Create((req) => {
             return {
                 name: "body",
@@ -41,7 +42,21 @@ class SchemaHandler {
             };
         }, (req, _res, value) => {
             req.body = value;
-        }, assertion);
+        }, f);
+    }
+    static CreateHeader(f) {
+        const d = sd.toAssertDelegateExact(f);
+        return SchemaHandler.Create((req) => {
+            return {
+                name: "header",
+                value: req.headers,
+            };
+        }, (req, _res, value) => {
+            req.headers = value;
+        }, (name, mixed) => {
+            const clean = d(name, mixed);
+            return Object.assign({}, mixed, clean);
+        });
     }
 }
 exports.SchemaHandler = SchemaHandler;

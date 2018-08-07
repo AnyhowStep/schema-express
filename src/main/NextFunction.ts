@@ -1,1 +1,3 @@
-export type NextFunction<NxtLocalsType> = (err: any, nxtLocals : NxtLocalsType) => void;
+export type NextFunction<NxtLocalsT> = (
+    (err: any, nxtLocals : NxtLocalsT) => void
+);

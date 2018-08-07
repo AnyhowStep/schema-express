@@ -4,6 +4,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./App"));
+__export(require("./assign"));
 __export(require("./Handler"));
 __export(require("./ResponseHandler"));
 __export(require("./RouteBuilder"));

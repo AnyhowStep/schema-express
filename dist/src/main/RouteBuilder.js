@@ -3,17 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Handler_1 = require("./Handler");
 const AsyncVoidHandler_1 = require("./AsyncVoidHandler");
 const SchemaHandler_1 = require("./SchemaHandler");
+//import {DefaultLocalsT} from "./DefaultLocalsT";
 const ResponseHandler_1 = require("./ResponseHandler");
 class RouteBuilder {
     constructor(route, handlers, rawRouter) {
         this.route = route;
         this.handlers = handlers;
         this.rawRouter = rawRouter;
-        this._dummyLocalsT;
-        //This should not happen, but just playing it safe
-        if (route.getMethod() == "Contextual") {
-            throw new Error(`Contextual method not allowed`);
-        }
+        this._dummyRequestDataT;
+        this._dummyResponseDataT;
+        this._dummyRouterT;
     }
     static Create(route) {
         return new RouteBuilder(route, [], undefined);
@@ -74,7 +73,23 @@ class RouteBuilder {
     }
     build() {
         const matcher = RouteBuilder.GetRouterMatcher(this.rawRouter, this.route.getMethod());
-        matcher(this.route.args.path.getRouterPath(), ResponseHandler_1.wrapResponseHandler(this.route.args.responseT), SchemaHandler_1.SchemaHandler.CreateParameter(this.route.args.paramT), SchemaHandler_1.SchemaHandler.CreateQuery(this.route.args.queryT), SchemaHandler_1.SchemaHandler.CreateBody(this.route.args.bodyT), ...this.handlers);
+        const handlers = [
+            ResponseHandler_1.wrapResponseHandler(this.route),
+            SchemaHandler_1.SchemaHandler.CreateParameter(this.route.data.paramF == undefined ?
+                () => ({}) :
+                this.route.data.paramF),
+            SchemaHandler_1.SchemaHandler.CreateQuery(this.route.data.queryF == undefined ?
+                () => ({}) :
+                this.route.data.queryF),
+            SchemaHandler_1.SchemaHandler.CreateBody(this.route.data.bodyF == undefined ?
+                () => ({}) :
+                this.route.data.bodyF),
+            SchemaHandler_1.SchemaHandler.CreateHeader(this.route.data.headerF == undefined ?
+                () => ({}) :
+                this.route.data.headerF),
+            ...this.handlers
+        ];
+        matcher(this.route.data.path.getRouterPath(), ...handlers);
     }
 }
 exports.RouteBuilder = RouteBuilder;

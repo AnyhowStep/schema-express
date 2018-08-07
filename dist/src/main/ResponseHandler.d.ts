@@ -1,6 +1,5 @@
-/// <reference types="express" />
 import * as express from "express";
-import * as schema from "schema-decorator";
+import * as sd from "schema-decorator";
 import { RequestVoidHandler } from "./VoidHandler";
-export declare function wrapResponse<ResponseT>(res: express.Response, responseAssertion: schema.Assertion<ResponseT>): void;
-export declare function wrapResponseHandler<ResponseT>(responseAssertion: schema.Assertion<ResponseT>): RequestVoidHandler<any, any, any, ResponseT, any>;
+export declare function wrapResponse<ResponseF extends undefined | sd.AnyAssertFunc = undefined>(res: express.Response, responseF: ResponseF): void;
+export declare function wrapResponseHandler<RouteT extends sd.Route<any>>(route: RouteT): RequestVoidHandler<RouteT, any>;
