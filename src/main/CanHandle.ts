@@ -11,7 +11,7 @@ export type CanHandle<
 > = (
     RequestDataT extends Req ?
     (
-        Locals<RequestDataT> extends Locals<Res> ?
+        Locals<ResponseDataT> extends Locals<Res> ?
         (
             "response" extends keyof Res ?
             (

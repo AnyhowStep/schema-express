@@ -1,3 +1,1 @@
-export declare type DefaultLocalsT = {
-    _dummy: undefined;
-};
+export declare type DefaultLocalsT = {};

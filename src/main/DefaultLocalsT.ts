@@ -1,1 +1,1 @@
-export type DefaultLocalsT = { _dummy : undefined };
+export type DefaultLocalsT = {};
