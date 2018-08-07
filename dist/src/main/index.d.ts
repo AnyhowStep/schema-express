@@ -1,6 +1,7 @@
 export * from "./App";
 export * from "./assign";
 export * from "./AsyncVoidHandler";
+export * from "./CanHandle";
 export * from "./DefaultLocalsT";
 export * from "./Handler";
 export * from "./HandlerArray";

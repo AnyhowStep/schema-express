@@ -4,6 +4,7 @@ import { Handler, RequestHandler, ErrorHandler } from "./Handler";
 import { VoidHandler, RequestVoidHandler, ErrorVoidHandler } from "./VoidHandler";
 import { Router } from "./Router";
 import { Assign } from "./assign";
+import { CanHandle } from "./CanHandle";
 export interface RouterMatcher<LocalsT extends object, ReturnT> {
     (path: string, ...handlers: (RequestVoidHandler<{}, {
         locals: LocalsT;
@@ -46,6 +47,9 @@ export declare class App<LocalsT extends Object = DefaultLocalsT> {
     useVoid(handler: VoidHandler<{}, {
         locals: LocalsT;
     }>): App<LocalsT>;
+    useVoid<H extends VoidHandler<any, any>>(handler: H): (H extends VoidHandler<infer Req, infer Res> ? (CanHandle<Req, Res, {}, {
+        locals: LocalsT;
+    }> extends true ? App<LocalsT> : never) : never);
     use<L extends object>(handler: RequestHandler<{}, {
         locals: LocalsT;
     }, L>): App<Assign<LocalsT, L>>;
@@ -55,6 +59,9 @@ export declare class App<LocalsT extends Object = DefaultLocalsT> {
     use<L extends object>(handler: Handler<{}, {
         locals: LocalsT;
     }, L>): App<Assign<LocalsT, L>>;
+    use<H extends Handler<any, any, any>>(handler: H): (H extends Handler<infer Req, infer Res, infer L> ? (CanHandle<Req, Res, {}, {
+        locals: LocalsT;
+    }> extends true ? App<Assign<LocalsT, L>> : never) : never);
     createRouter(): Router<LocalsT, expressCore.Express>;
     useRouter(root: string, router: Router<any, expressCore.Express | undefined>): void;
 }

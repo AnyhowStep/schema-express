@@ -10,7 +10,8 @@ import {SchemaHandler} from "./SchemaHandler";
 import {wrapResponseHandler} from "./ResponseHandler";
 import {Assign} from "./assign";
 import {RequestData} from "./Request";
-import {ResponseData, Locals} from "./Response";
+import {ResponseData} from "./Response";
+import {CanHandle} from "./CanHandle";
 
 export type RouteToRequestData<RouteT extends sd.Route<any>> = (
     {
@@ -116,32 +117,12 @@ export class RouteBuilder<
     public voidHandler<H extends VoidHandler<any, any>> (handler : H) : (
         H extends VoidHandler<infer Req, infer Res> ?
         (
-            RequestDataT extends Req ?
-            (
-                Locals<RequestDataT> extends Locals<Res> ?
-                (
-                    "response" extends keyof Res ?
-                    (
-                        "response" extends keyof ResponseDataT ?
-                        (
-                            Res["response"] extends ResponseDataT["response"] ?
-                            RouteBuilder<
-                                RequestDataT,
-                                ResponseDataT,
-                                RouterT
-                            > :
-                            never
-                        ) :
-                        never
-                    ) :
-                    RouteBuilder<
-                        RequestDataT,
-                        ResponseDataT,
-                        RouterT
-                    >
-                ) :
-                never
-            ) :
+            CanHandle<Req, Res, RequestDataT, ResponseDataT> extends true ?
+            RouteBuilder<
+                RequestDataT,
+                ResponseDataT,
+                RouterT
+            > :
             never
         ) :
         never
@@ -191,44 +172,18 @@ export class RouteBuilder<
     public handler<H extends Handler<any, any, any>> (handler : H) : (
         H extends Handler<infer Req, infer Res, infer NxtL> ?
         (
-            RequestDataT extends Req ?
-            (
-                Locals<RequestDataT> extends Locals<Res> ?
-                (
-                    "response" extends keyof Res ?
-                    (
-                        "response" extends keyof ResponseDataT ?
-                        (
-                            Res["response"] extends ResponseDataT["response"] ?
-                            RouteBuilder<
-                                RequestDataT,
-                                {
-                                    [key in keyof ResponseDataT] : (
-                                        key extends "locals" ?
-                                        Assign<ResponseDataT["locals"], NxtL> :
-                                        ResponseDataT[key]
-                                    )
-                                },
-                                RouterT
-                            > :
-                            never
-                        ) :
-                        never
-                    ) :
-                    RouteBuilder<
-                        RequestDataT,
-                        {
-                            [key in keyof ResponseDataT] : (
-                                key extends "locals" ?
-                                Assign<ResponseDataT["locals"], NxtL> :
-                                ResponseDataT[key]
-                            )
-                        },
-                        RouterT
-                    >
-                ) :
-                never
-            ) :
+            CanHandle<Req, Res, RequestDataT, ResponseDataT> extends true ?
+            RouteBuilder<
+                RequestDataT,
+                {
+                    [key in keyof ResponseDataT] : (
+                        key extends "locals" ?
+                        Assign<ResponseDataT["locals"], NxtL> :
+                        ResponseDataT[key]
+                    )
+                },
+                RouterT
+            > :
             never
         ) :
         never
@@ -268,32 +223,12 @@ export class RouteBuilder<
     public asyncVoidHandler<H extends AsyncVoidHandler<any, any>> (handler : H) : (
         H extends AsyncVoidHandler<infer Req, infer Res> ?
         (
-            RequestDataT extends Req ?
-            (
-                Locals<RequestDataT> extends Locals<Res> ?
-                (
-                    "response" extends keyof Res ?
-                    (
-                        "response" extends keyof ResponseDataT ?
-                        (
-                            Res["response"] extends ResponseDataT["response"] ?
-                            RouteBuilder<
-                                RequestDataT,
-                                ResponseDataT,
-                                RouterT
-                            > :
-                            never
-                        ) :
-                        never
-                    ) :
-                    RouteBuilder<
-                        RequestDataT,
-                        ResponseDataT,
-                        RouterT
-                    >
-                ) :
-                never
-            ) :
+            CanHandle<Req, Res, RequestDataT, ResponseDataT> extends true ?
+            RouteBuilder<
+                RequestDataT,
+                ResponseDataT,
+                RouterT
+            > :
             never
         ) :
         never

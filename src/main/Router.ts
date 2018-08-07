@@ -6,6 +6,7 @@ import {VoidHandler, RequestVoidHandler, ErrorVoidHandler} from "./VoidHandler";
 import {DefaultLocalsT} from "./DefaultLocalsT";
 import {RouteBuilder, RouteToRequestData, RouteToResponseData} from "./RouteBuilder";
 import {Assign} from "./assign";
+import {CanHandle} from "./CanHandle";
 
 //TODO support param(), they're pretty cool
 export class Router <
@@ -49,6 +50,15 @@ export class Router <
     public useVoid (handler : RequestVoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT>;
     public useVoid (handler : ErrorVoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT>;
     public useVoid (handler : VoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT>;
+    public useVoid<H extends VoidHandler<any, any>> (handler : H) : (
+        H extends VoidHandler<infer Req, infer Res> ?
+        (
+            CanHandle<Req, Res, {}, { locals : LocalsT }> extends true ?
+            Router<LocalsT, AppT> :
+            never
+        ) :
+        never
+    );
     public useVoid (handler : VoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT> {
         this.rawRouter.use(handler);
         return this;
@@ -57,7 +67,16 @@ export class Router <
     public use<L extends object> (handler : RequestHandler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT>;
     public use<L extends object> (handler : ErrorHandler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT>;
     public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT>;
-    public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT> {
+    public use<H extends Handler<any, any, any>> (handler : H) : (
+        H extends Handler<infer Req, infer Res, infer L> ?
+        (
+            CanHandle<Req, Res, {}, { locals : LocalsT }> extends true ?
+            Router<Assign<LocalsT, L>, AppT> :
+            never
+        ) :
+        never
+    );
+    public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : any {
         const newHandler = wrapHandler(handler);
         this.rawRouter.use(newHandler);
         return this as any;
@@ -67,6 +86,15 @@ export class Router <
     public voidHandler (handler : RequestVoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT>;
     public voidHandler (handler : ErrorVoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT>;
     public voidHandler (handler : VoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT>;
+    public voidHandler<H extends VoidHandler<any, any>> (handler : H) : (
+        H extends VoidHandler<infer Req, infer Res> ?
+        (
+            CanHandle<Req, Res, {}, { locals : LocalsT }> extends true ?
+            Router<LocalsT, AppT> :
+            never
+        ) :
+        never
+    );
     public voidHandler (handler : VoidHandler<{}, { locals : LocalsT }>) : Router<LocalsT, AppT> {
         return new Router(
             this.rawRouter,
@@ -79,7 +107,16 @@ export class Router <
     public handler<L extends object> (handler : RequestHandler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT>;
     public handler<L extends object> (handler : ErrorHandler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT>;
     public handler<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT>;
-    public handler<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : Router<Assign<LocalsT, L>, AppT> {
+    public handler<H extends Handler<any, any, any>> (handler : H) : (
+        H extends Handler<infer Req, infer Res, infer L> ?
+        (
+            CanHandle<Req, Res, {}, { locals : LocalsT }> extends true ?
+            Router<Assign<LocalsT, L>, AppT> :
+            never
+        ) :
+        never
+    );
+    public handler<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : any {
         return new Router(
             this.rawRouter,
             this.rawApp,

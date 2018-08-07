@@ -5,6 +5,7 @@ import {Handler, RequestHandler, ErrorHandler, wrapHandler} from "./Handler";
 import {VoidHandler, RequestVoidHandler, ErrorVoidHandler} from "./VoidHandler";
 import {Router} from "./Router";
 import {Assign} from "./assign";
+import {CanHandle} from "./CanHandle";
 
 export interface RouterMatcher<LocalsT extends object, ReturnT> {
     (
@@ -76,6 +77,15 @@ export class App <LocalsT extends Object = DefaultLocalsT> {
     public useVoid (handler : RequestVoidHandler<{}, { locals : LocalsT }>) : App<LocalsT>;
     public useVoid (handler : ErrorVoidHandler<{}, { locals : LocalsT }>) : App<LocalsT>;
     public useVoid (handler : VoidHandler<{}, { locals : LocalsT }>) : App<LocalsT>;
+    public useVoid<H extends VoidHandler<any, any>> (handler : H) : (
+        H extends VoidHandler<infer Req, infer Res> ?
+        (
+            CanHandle<Req, Res, {}, { locals : LocalsT }> extends true ?
+            App<LocalsT> :
+            never
+        ) :
+        never
+    );
     public useVoid (handler : VoidHandler<{}, { locals : LocalsT }>) : App<LocalsT> {
         this.rawApp.use(handler);
         return this;
@@ -83,7 +93,16 @@ export class App <LocalsT extends Object = DefaultLocalsT> {
     public use<L extends object> (handler : RequestHandler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>>;
     public use<L extends object> (handler : ErrorHandler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>>;
     public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>>;
-    public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : App<Assign<LocalsT, L>> {
+    public use<H extends Handler<any, any, any>> (handler: H) : (
+        H extends Handler<infer Req, infer Res, infer L> ?
+        (
+            CanHandle<Req, Res, {}, { locals : LocalsT }> extends true ?
+                App<Assign<LocalsT, L>> :
+                never
+        ) :
+        never
+    );
+    public use<L extends object> (handler : Handler<{}, { locals : LocalsT }, L>) : any {
         const newHandler = wrapHandler(handler);
         this.rawApp.use(newHandler);
         return this as any;

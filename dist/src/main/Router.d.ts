@@ -5,6 +5,7 @@ import { VoidHandler, RequestVoidHandler, ErrorVoidHandler } from "./VoidHandler
 import { DefaultLocalsT } from "./DefaultLocalsT";
 import { RouteBuilder, RouteToRequestData, RouteToResponseData } from "./RouteBuilder";
 import { Assign } from "./assign";
+import { CanHandle } from "./CanHandle";
 export declare class Router<LocalsT extends object = DefaultLocalsT, AppT extends expressCore.Express | undefined = undefined> {
     private rawRouter;
     private rawApp;
@@ -23,6 +24,9 @@ export declare class Router<LocalsT extends object = DefaultLocalsT, AppT extend
     useVoid(handler: VoidHandler<{}, {
         locals: LocalsT;
     }>): Router<LocalsT, AppT>;
+    useVoid<H extends VoidHandler<any, any>>(handler: H): (H extends VoidHandler<infer Req, infer Res> ? (CanHandle<Req, Res, {}, {
+        locals: LocalsT;
+    }> extends true ? Router<LocalsT, AppT> : never) : never);
     use<L extends object>(handler: RequestHandler<{}, {
         locals: LocalsT;
     }, L>): Router<Assign<LocalsT, L>, AppT>;
@@ -32,6 +36,9 @@ export declare class Router<LocalsT extends object = DefaultLocalsT, AppT extend
     use<L extends object>(handler: Handler<{}, {
         locals: LocalsT;
     }, L>): Router<Assign<LocalsT, L>, AppT>;
+    use<H extends Handler<any, any, any>>(handler: H): (H extends Handler<infer Req, infer Res, infer L> ? (CanHandle<Req, Res, {}, {
+        locals: LocalsT;
+    }> extends true ? Router<Assign<LocalsT, L>, AppT> : never) : never);
     voidHandler(handler: RequestVoidHandler<{}, {
         locals: LocalsT;
     }>): Router<LocalsT, AppT>;
@@ -41,6 +48,9 @@ export declare class Router<LocalsT extends object = DefaultLocalsT, AppT extend
     voidHandler(handler: VoidHandler<{}, {
         locals: LocalsT;
     }>): Router<LocalsT, AppT>;
+    voidHandler<H extends VoidHandler<any, any>>(handler: H): (H extends VoidHandler<infer Req, infer Res> ? (CanHandle<Req, Res, {}, {
+        locals: LocalsT;
+    }> extends true ? Router<LocalsT, AppT> : never) : never);
     handler<L extends object>(handler: RequestHandler<{}, {
         locals: LocalsT;
     }, L>): Router<Assign<LocalsT, L>, AppT>;
@@ -50,6 +60,9 @@ export declare class Router<LocalsT extends object = DefaultLocalsT, AppT extend
     handler<L extends object>(handler: Handler<{}, {
         locals: LocalsT;
     }, L>): Router<Assign<LocalsT, L>, AppT>;
+    handler<H extends Handler<any, any, any>>(handler: H): (H extends Handler<infer Req, infer Res, infer L> ? (CanHandle<Req, Res, {}, {
+        locals: LocalsT;
+    }> extends true ? Router<Assign<LocalsT, L>, AppT> : never) : never);
     add<RouteT extends sd.Route<any>>(route: RouteT): (RouteBuilder<RouteToRequestData<RouteT>, RouteToResponseData<RouteT, LocalsT>, expressCore.IRouter>);
     setApp(rawApp: expressCore.Express): Router<LocalsT, expressCore.Express>;
     getApp(): AppT;
