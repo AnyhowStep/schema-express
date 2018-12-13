@@ -1,11 +1,12 @@
 {
   "name": "schema-express",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "Express with schema-decorator",
   "main": "dist/src/main/index.js",
   "types": "dist/src/main/index.d.ts",
   "scripts": {
     "test": "ts-node ./src/test/test.ts",
+    "test-2": "ts-node ./src/test/test-2.ts",
     "build": "(rm -r ./dist || true) && tsc -d"
   },
   "author": "anyhowstep",

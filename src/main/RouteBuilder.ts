@@ -5,6 +5,7 @@ import {HandlerArray} from "./HandlerArray";
 import {VoidHandler, RequestVoidHandler, ErrorVoidHandler} from "./VoidHandler";
 import {Handler, RequestHandler, ErrorHandler, wrapHandler} from "./Handler";
 import {AsyncVoidHandler, AsyncRequestVoidHandler, AsyncErrorVoidHandler, wrapAsyncVoidHandler} from "./AsyncVoidHandler";
+import {AsyncJsonHandler, AsyncRequestJsonHandler, AsyncErrorJsonHandler, wrapAsyncJsonHandler} from "./AsyncJsonHandler";
 import {SchemaHandler} from "./SchemaHandler";
 //import {DefaultLocalsT} from "./DefaultLocalsT";
 import {wrapResponseHandler} from "./ResponseHandler";
@@ -241,6 +242,58 @@ export class RouteBuilder<
         >
     ) {
         const newHandler = wrapAsyncVoidHandler(handler);
+        return new RouteBuilder(
+            this.route,
+            [
+                ...this.handlers,
+                newHandler
+            ],
+            this.rawRouter
+        );
+    }
+
+    public asyncJsonHandler (handler : AsyncRequestJsonHandler<RequestDataT, ResponseDataT>) : (
+        RouteBuilder<
+            RequestDataT,
+            ResponseDataT,
+            RouterT
+        >
+    );
+    public asyncJsonHandler (handler : AsyncErrorJsonHandler<RequestDataT, ResponseDataT>) : (
+        RouteBuilder<
+            RequestDataT,
+            ResponseDataT,
+            RouterT
+        >
+    );
+    public asyncJsonHandler (handler : AsyncJsonHandler<RequestDataT, ResponseDataT>) : (
+        RouteBuilder<
+            RequestDataT,
+            ResponseDataT,
+            RouterT
+        >
+    );
+    public asyncJsonHandler<H extends AsyncJsonHandler<any, any>> (handler : H) : (
+        H extends AsyncJsonHandler<infer Req, infer Res> ?
+        (
+            CanHandle<Req, Res, RequestDataT, ResponseDataT> extends true ?
+            RouteBuilder<
+                RequestDataT,
+                ResponseDataT,
+                RouterT
+            > :
+            never
+        ) :
+        never
+    );
+    public asyncJsonHandler (handler : AsyncJsonHandler<RequestDataT, ResponseDataT>) : (
+        RouteBuilder<
+            RequestDataT,
+            ResponseDataT,
+            RouterT
+        >
+    ) {
+        const newHandler = wrapAsyncJsonHandler(handler);
         return new RouteBuilder(
             this.route,
             [

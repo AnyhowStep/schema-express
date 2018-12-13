@@ -4,6 +4,7 @@ import * as express from "express";
 import { VoidHandler, RequestVoidHandler, ErrorVoidHandler } from "./VoidHandler";
 import { Handler, RequestHandler, ErrorHandler } from "./Handler";
 import { AsyncVoidHandler, AsyncRequestVoidHandler, AsyncErrorVoidHandler } from "./AsyncVoidHandler";
+import { AsyncJsonHandler, AsyncRequestJsonHandler, AsyncErrorJsonHandler } from "./AsyncJsonHandler";
 import { Assign } from "./assign";
 import { RequestData } from "./Request";
 import { ResponseData } from "./Response";
@@ -46,6 +47,10 @@ export declare class RouteBuilder<RequestDataT extends RequestData, ResponseData
     asyncVoidHandler(handler: AsyncErrorVoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
     asyncVoidHandler(handler: AsyncVoidHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
     asyncVoidHandler<H extends AsyncVoidHandler<any, any>>(handler: H): (H extends AsyncVoidHandler<infer Req, infer Res> ? (CanHandle<Req, Res, RequestDataT, ResponseDataT> extends true ? RouteBuilder<RequestDataT, ResponseDataT, RouterT> : never) : never);
+    asyncJsonHandler(handler: AsyncRequestJsonHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    asyncJsonHandler(handler: AsyncErrorJsonHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    asyncJsonHandler(handler: AsyncJsonHandler<RequestDataT, ResponseDataT>): (RouteBuilder<RequestDataT, ResponseDataT, RouterT>);
+    asyncJsonHandler<H extends AsyncJsonHandler<any, any>>(handler: H): (H extends AsyncJsonHandler<infer Req, infer Res> ? (CanHandle<Req, Res, RequestDataT, ResponseDataT> extends true ? RouteBuilder<RequestDataT, ResponseDataT, RouterT> : never) : never);
     static GetRouterMatcher(router: expressCore.IRouter, method: Exclude<sd.MethodLiteral, "Contextual">): express.IRouterMatcher<expressCore.IRouter>;
     setRouter(rawRouter: expressCore.IRouter): RouteBuilder<RequestDataT, ResponseDataT, expressCore.IRouter>;
     build(this: RouteBuilder<RequestDataT, ResponseDataT, expressCore.IRouter>): void;

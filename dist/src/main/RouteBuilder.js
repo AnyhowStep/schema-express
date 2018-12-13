@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Handler_1 = require("./Handler");
 const AsyncVoidHandler_1 = require("./AsyncVoidHandler");
+const AsyncJsonHandler_1 = require("./AsyncJsonHandler");
 const SchemaHandler_1 = require("./SchemaHandler");
 //import {DefaultLocalsT} from "./DefaultLocalsT";
 const ResponseHandler_1 = require("./ResponseHandler");
@@ -32,6 +33,13 @@ class RouteBuilder {
     }
     asyncVoidHandler(handler) {
         const newHandler = AsyncVoidHandler_1.wrapAsyncVoidHandler(handler);
+        return new RouteBuilder(this.route, [
+            ...this.handlers,
+            newHandler
+        ], this.rawRouter);
+    }
+    asyncJsonHandler(handler) {
+        const newHandler = AsyncJsonHandler_1.wrapAsyncJsonHandler(handler);
         return new RouteBuilder(this.route, [
             ...this.handlers,
             newHandler
