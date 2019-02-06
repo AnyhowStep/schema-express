@@ -9,21 +9,39 @@ exports.isRequestHandler = isRequestHandler;
 function wrapHandler(handler) {
     if (isRequestHandler(handler)) {
         const requestVoidHandler = (req, res, next) => {
-            handler(req, res, (err, nxtLocals) => {
+            const n = ((err, nxtLocals) => {
                 //Overwrite res.locals
                 assign_1.assign(res.locals, nxtLocals);
                 next(err);
             });
+            n.error = (err) => {
+                if (err == undefined) {
+                    next(new Error(`An unknown error occurred`));
+                }
+                else {
+                    next(err);
+                }
+            };
+            handler(req, res, n);
         };
         return requestVoidHandler;
     }
     else {
         const errorVoidHandler = (err, req, res, next) => {
-            handler(err, req, res, (err, nxtLocals) => {
+            const n = ((err, nxtLocals) => {
                 //Overwrite res.locals
                 assign_1.assign(res.locals, nxtLocals);
                 next(err);
             });
+            n.error = (err) => {
+                if (err == undefined) {
+                    next(new Error(`An unknown error occurred`));
+                }
+                else {
+                    next(err);
+                }
+            };
+            handler(err, req, res, n);
         };
         return errorVoidHandler;
     }

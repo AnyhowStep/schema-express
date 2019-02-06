@@ -34,8 +34,15 @@ export interface RouterMatcher<LocalsT extends object, ReturnT> {
 }
 
 export function toRouterMatcher<LocalsT extends Object, ReturnT> (matcher : expressCore.IRouterMatcher<any>, returnValue : ReturnT) : RouterMatcher<LocalsT, ReturnT> {
-    return (path : string, ...handlers : (VoidHandler<{}, { locals : LocalsT }>|Handler<{}, { locals : LocalsT }, any>)[]) => {
-        matcher(path, ...handlers);
+    return (
+        path : string,
+        ...handlers : (
+            VoidHandler<{}, { locals : LocalsT }>|
+            Handler<{}, { locals : LocalsT }, any>
+        )[]
+    ) => {
+        //TODO Investigate why `as any` is needed here
+        matcher(path, ...handlers as any);
         return returnValue;
     };
 }

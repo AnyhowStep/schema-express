@@ -40,20 +40,36 @@ export function wrapHandler<RequestDataT extends RequestData, ResponseDataT exte
 ) {
     if (isRequestHandler(handler)) {
         const requestVoidHandler = (req : Request<RequestDataT>, res : Response<ResponseDataT>, next : VoidNextFunction) => {
-            handler(req, res, (err : any, nxtLocals : NxtLocalsT) => {
+            const n : NextFunction<NxtLocalsT> = ((err : any, nxtLocals : NxtLocalsT) => {
                 //Overwrite res.locals
                 assign(res.locals, nxtLocals);
                 next(err);
-            });
+            }) as any;
+            n.error = (err : any) => {
+                if (err == undefined) {
+                    next(new Error(`An unknown error occurred`));
+                } else {
+                    next(err);
+                }
+            };
+            handler(req, res, n);
         };
         return requestVoidHandler;
     } else {
         const errorVoidHandler = (err : any, req : Request<RequestDataT>, res : Response<ResponseDataT>, next : VoidNextFunction) => {
-            handler(err, req, res, (err : any, nxtLocals : NxtLocalsT) => {
+            const n : NextFunction<NxtLocalsT> = ((err : any, nxtLocals : NxtLocalsT) => {
                 //Overwrite res.locals
                 assign(res.locals, nxtLocals);
                 next(err);
-            });
+            }) as any;
+            n.error = (err : any) => {
+                if (err == undefined) {
+                    next(new Error(`An unknown error occurred`));
+                } else {
+                    next(err);
+                }
+            };
+            handler(err, req, res, n);
         };
         return errorVoidHandler;
     }
